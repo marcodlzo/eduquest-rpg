@@ -1,0 +1,454 @@
+{
+  "questions": [
+    {
+      "question": "Which loop runs at least once?",
+      "optionA": "for",
+      "optionB": "while",
+      "optionC": "do-while",
+      "optionD": "foreach",
+      "answer": "C",
+      "category": "Programming",
+      "difficulty": "Easy"
+    },
+    {
+      "question": "What does the ++ operator do?",
+      "optionA": "Multiply",
+      "optionB": "Divide",
+      "optionC": "Increment",
+      "optionD": "Decrement",
+      "answer": "C",
+      "category": "Programming",
+      "difficulty": "Easy"
+    },
+    {
+      "question": "Array index starts at?",
+      "optionA": "1",
+      "optionB": "0",
+      "optionC": "-1",
+      "optionD": "2",
+      "answer": "B",
+      "category": "Programming",
+      "difficulty": "Easy"
+    },
+    {
+      "question": "Which keyword declares a constant in C++?",
+      "optionA": "var",
+      "optionB": "let",
+      "optionC": "const",
+      "optionD": "static",
+      "answer": "C",
+      "category": "Programming",
+      "difficulty": "Easy"
+    },
+    {
+      "question": "What symbol ends most C++ statements?",
+      "optionA": ".",
+      "optionB": ":",
+      "optionC": ";",
+      "optionD": ",",
+      "answer": "C",
+      "category": "Programming",
+      "difficulty": "Easy"
+    },
+    {
+      "question": "Which of the following is a boolean value?",
+      "optionA": "\"true\"",
+      "optionB": "1==1",
+      "optionC": "100",
+      "optionD": "'t'",
+      "answer": "B",
+      "category": "Programming",
+      "difficulty": "Medium"
+    },
+    {
+      "question": "What is recursion?",
+      "optionA": "A loop",
+      "optionB": "A function calling itself",
+      "optionC": "An array",
+      "optionD": "A class",
+      "answer": "B",
+      "category": "Programming",
+      "difficulty": "Medium"
+    },
+    {
+      "question": "What does '==' do in most languages?",
+      "optionA": "Assignment",
+      "optionB": "Comparison",
+      "optionC": "Declaration",
+      "optionD": "Negation",
+      "answer": "B",
+      "category": "Programming",
+      "difficulty": "Medium"
+    },
+    {
+      "question": "Which is NOT a primitive data type?",
+      "optionA": "int",
+      "optionB": "float",
+      "optionC": "string",
+      "optionD": "Array",
+      "answer": "D",
+      "category": "Programming",
+      "difficulty": "Medium"
+    },
+    {
+      "question": "What does 'void' mean as a return type?",
+      "optionA": "Returns null",
+      "optionB": "Returns nothing",
+      "optionC": "Returns 0",
+      "optionD": "Returns empty string",
+      "answer": "B",
+      "category": "Programming",
+      "difficulty": "Hard"
+    },
+    {
+      "question": "What is the time complexity of binary search?",
+      "optionA": "O(n)",
+      "optionB": "O(n^2)",
+      "optionC": "O(log n)",
+      "optionD": "O(1)",
+      "answer": "C",
+      "category": "Programming",
+      "difficulty": "Hard"
+    },
+    {
+      "question": "What is a pointer in C++?",
+      "optionA": "A variable storing a memory address",
+      "optionB": "A type of loop",
+      "optionC": "A class method",
+      "optionD": "A string function",
+      "answer": "A",
+      "category": "Programming",
+      "difficulty": "Hard"
+    },
+    {
+      "question": "What is polymorphism in OOP?",
+      "optionA": "Multiple inheritance",
+      "optionB": "Same interface, different behavior",
+      "optionC": "Data hiding",
+      "optionD": "Static typing",
+      "answer": "B",
+      "category": "Programming",
+      "difficulty": "Hard"
+    },
+    {
+      "question": "What is the speed of light?",
+      "optionA": "3x10^6 m/s",
+      "optionB": "3x10^8 m/s",
+      "optionC": "3x10^10 m/s",
+      "optionD": "3x10^4 m/s",
+      "answer": "B",
+      "category": "Science",
+      "difficulty": "Easy"
+    },
+    {
+      "question": "What is the chemical symbol of water?",
+      "optionA": "H3O",
+      "optionB": "HO",
+      "optionC": "H2O",
+      "optionD": "O2H",
+      "answer": "C",
+      "category": "Science",
+      "difficulty": "Easy"
+    },
+    {
+      "question": "What planet is closest to the Sun?",
+      "optionA": "Venus",
+      "optionB": "Earth",
+      "optionC": "Mercury",
+      "optionD": "Mars",
+      "answer": "C",
+      "category": "Science",
+      "difficulty": "Easy"
+    },
+    {
+      "question": "What gas do plants absorb?",
+      "optionA": "Oxygen",
+      "optionB": "Nitrogen",
+      "optionC": "Carbon Dioxide",
+      "optionD": "Hydrogen",
+      "answer": "C",
+      "category": "Science",
+      "difficulty": "Easy"
+    },
+    {
+      "question": "Photosynthesis produces?",
+      "optionA": "CO2",
+      "optionB": "N2",
+      "optionC": "O2",
+      "optionD": "H2",
+      "answer": "C",
+      "category": "Science",
+      "difficulty": "Medium"
+    },
+    {
+      "question": "Newton's 1st Law is about?",
+      "optionA": "Gravity",
+      "optionB": "Inertia",
+      "optionC": "Momentum",
+      "optionD": "Force",
+      "answer": "B",
+      "category": "Science",
+      "difficulty": "Medium"
+    },
+    {
+      "question": "What is the atomic number of Carbon?",
+      "optionA": "4",
+      "optionB": "6",
+      "optionC": "8",
+      "optionD": "12",
+      "answer": "B",
+      "category": "Science",
+      "difficulty": "Medium"
+    },
+    {
+      "question": "What type of energy does a moving car have?",
+      "optionA": "Potential",
+      "optionB": "Thermal",
+      "optionC": "Kinetic",
+      "optionD": "Nuclear",
+      "answer": "C",
+      "category": "Science",
+      "difficulty": "Medium"
+    },
+    {
+      "question": "What is the smallest unit of life?",
+      "optionA": "Atom",
+      "optionB": "Molecule",
+      "optionC": "Cell",
+      "optionD": "Organ",
+      "answer": "C",
+      "category": "Science",
+      "difficulty": "Hard"
+    },
+    {
+      "question": "What is the powerhouse of the cell?",
+      "optionA": "Nucleus",
+      "optionB": "Ribosome",
+      "optionC": "Mitochondria",
+      "optionD": "Golgi body",
+      "answer": "C",
+      "category": "Science",
+      "difficulty": "Hard"
+    },
+    {
+      "question": "What force keeps planets in orbit?",
+      "optionA": "Electromagnetic",
+      "optionB": "Nuclear",
+      "optionC": "Gravity",
+      "optionD": "Friction",
+      "answer": "C",
+      "category": "Science",
+      "difficulty": "Hard"
+    },
+    {
+      "question": "What does CPU stand for?",
+      "optionA": "Central Process Unit",
+      "optionB": "Central Processing Unit",
+      "optionC": "Computer Personal Unit",
+      "optionD": "Central Program Utility",
+      "answer": "B",
+      "category": "Computer Science",
+      "difficulty": "Easy"
+    },
+    {
+      "question": "What does RAM stand for?",
+      "optionA": "Read Access Memory",
+      "optionB": "Random Access Memory",
+      "optionC": "Rapid Access Module",
+      "optionD": "Run Application Memory",
+      "answer": "B",
+      "category": "Computer Science",
+      "difficulty": "Easy"
+    },
+    {
+      "question": "Which data structure uses FIFO?",
+      "optionA": "Stack",
+      "optionB": "Queue",
+      "optionC": "Tree",
+      "optionD": "Graph",
+      "answer": "B",
+      "category": "Computer Science",
+      "difficulty": "Easy"
+    },
+    {
+      "question": "What does HTML stand for?",
+      "optionA": "Hyper Text Markup Language",
+      "optionB": "High Tech Modern Language",
+      "optionC": "Hyper Transfer Markup Language",
+      "optionD": "Home Tool Markup Language",
+      "answer": "A",
+      "category": "Computer Science",
+      "difficulty": "Easy"
+    },
+    {
+      "question": "What is 1 byte equal to?",
+      "optionA": "4 bits",
+      "optionB": "8 bits",
+      "optionC": "16 bits",
+      "optionD": "32 bits",
+      "answer": "B",
+      "category": "Computer Science",
+      "difficulty": "Easy"
+    },
+    {
+      "question": "Which data structure uses LIFO?",
+      "optionA": "Queue",
+      "optionB": "Array",
+      "optionC": "Stack",
+      "optionD": "Linked List",
+      "answer": "C",
+      "category": "Computer Science",
+      "difficulty": "Medium"
+    },
+    {
+      "question": "What is the binary representation of 10?",
+      "optionA": "1010",
+      "optionB": "1100",
+      "optionC": "1001",
+      "optionD": "1110",
+      "answer": "A",
+      "category": "Computer Science",
+      "difficulty": "Medium"
+    },
+    {
+      "question": "What does SQL stand for?",
+      "optionA": "Simple Query Language",
+      "optionB": "Structured Query Language",
+      "optionC": "Standard Question Language",
+      "optionD": "System Query Logic",
+      "answer": "B",
+      "category": "Computer Science",
+      "difficulty": "Medium"
+    },
+    {
+      "question": "What does an OS manage?",
+      "optionA": "Only hardware",
+      "optionB": "Only software",
+      "optionC": "Hardware and software resources",
+      "optionD": "Only memory",
+      "answer": "C",
+      "category": "Computer Science",
+      "difficulty": "Medium"
+    },
+    {
+      "question": "Which protocol is used for web browsing?",
+      "optionA": "FTP",
+      "optionB": "SMTP",
+      "optionC": "HTTP",
+      "optionD": "SSH",
+      "answer": "C",
+      "category": "Computer Science",
+      "difficulty": "Medium"
+    },
+    {
+      "question": "What is a linked list?",
+      "optionA": "An array with fixed size",
+      "optionB": "Nodes connected by pointers",
+      "optionC": "A type of tree",
+      "optionD": "A hash table",
+      "answer": "B",
+      "category": "Computer Science",
+      "difficulty": "Medium"
+    },
+    {
+      "question": "What is a deadlock in OS?",
+      "optionA": "A crash",
+      "optionB": "Processes waiting for each other indefinitely",
+      "optionC": "Memory overflow",
+      "optionD": "Disk failure",
+      "answer": "B",
+      "category": "Computer Science",
+      "difficulty": "Hard"
+    },
+    {
+      "question": "Which sorting algorithm has O(n log n) average case?",
+      "optionA": "Bubble Sort",
+      "optionB": "Selection Sort",
+      "optionC": "Merge Sort",
+      "optionD": "Insertion Sort",
+      "answer": "C",
+      "category": "Computer Science",
+      "difficulty": "Hard"
+    },
+    {
+      "question": "What is Big O notation used for?",
+      "optionA": "Memory allocation",
+      "optionB": "Describing algorithm efficiency",
+      "optionC": "Variable naming",
+      "optionD": "Error handling",
+      "answer": "B",
+      "category": "Computer Science",
+      "difficulty": "Hard"
+    },
+    {
+      "question": "What is a hash table's average lookup time?",
+      "optionA": "O(n)",
+      "optionB": "O(log n)",
+      "optionC": "O(1)",
+      "optionD": "O(n^2)",
+      "answer": "C",
+      "category": "Computer Science",
+      "difficulty": "Hard"
+    },
+    {
+      "question": "What does API stand for?",
+      "optionA": "Application Programming Interface",
+      "optionB": "Advanced Program Integration",
+      "optionC": "Automated Process Input",
+      "optionD": "Application Process Interface",
+      "answer": "A",
+      "category": "Computer Science",
+      "difficulty": "Hard"
+    },
+    {
+      "question": "Which is a compiled language?",
+      "optionA": "Python",
+      "optionB": "JavaScript",
+      "optionC": "C++",
+      "optionD": "Ruby",
+      "answer": "C",
+      "category": "Programming",
+      "difficulty": "Easy"
+    },
+    {
+      "question": "What is encapsulation in OOP?",
+      "optionA": "Hiding internal details",
+      "optionB": "Inheriting methods",
+      "optionC": "Overloading functions",
+      "optionD": "Creating objects",
+      "answer": "A",
+      "category": "Programming",
+      "difficulty": "Medium"
+    },
+    {
+      "question": "What does 'break' do in a loop?",
+      "optionA": "Skips one iteration",
+      "optionB": "Exits the loop",
+      "optionC": "Restarts the loop",
+      "optionD": "Pauses the loop",
+      "answer": "B",
+      "category": "Programming",
+      "difficulty": "Easy"
+    },
+    {
+      "question": "What is the hexadecimal base?",
+      "optionA": "2",
+      "optionB": "8",
+      "optionC": "10",
+      "optionD": "16",
+      "answer": "D",
+      "category": "Computer Science",
+      "difficulty": "Medium"
+    },
+    {
+      "question": "What is the pH of pure water?",
+      "optionA": "5",
+      "optionB": "7",
+      "optionC": "9",
+      "optionD": "14",
+      "answer": "B",
+      "category": "Science",
+      "difficulty": "Easy"
+    }
+  ]
+}
