@@ -1,0 +1,915 @@
+================================================================================
+                        EDUQUEST RPG — PROJECT DOCUMENTATION
+                         SPL Midterm Project Documentation
+================================================================================
+
+
+TABLE OF CONTENTS
+-----------------
+1. Project Overview
+2. System Requirements & Setup
+3. Build Instructions
+4. Project Structure & File Organization
+5. Architecture Overview
+6. Class Documentation
+   6.1  Game
+   6.2  GameManager
+   6.3  Player
+   6.4  Enemy
+   6.5  BattleSystem
+   6.6  QuestionManager
+   6.7  UIManager
+   6.8  SoundManager
+7. Data Structures (Structs & Enums)
+8. Game Flow & State Machine
+9. Gameplay Mechanics
+10. Data Files
+11. Assets
+12. OOP Concepts Applied
+
+
+================================================================================
+1. PROJECT OVERVIEW
+================================================================================
+
+EduQuest RPG is a 2D top-down Educational Role-Playing Game built in C++17
+using the SFML 2.6 library. Players navigate a tile-based world, encounter
+enemies patrolling the map, and defeat them by correctly answering Math,
+Programming, and Science questions.
+
+Genre:          Educational RPG
+Language:       C++17
+Framework:      SFML 2.6 (Simple and Fast Multimedia Library)
+Resolution:     1280 x 720 pixels
+Tile Size:      48 x 48 pixels
+Map Size:       30 x 20 tiles (1440 x 960 logical, displayed at 1280 x 720)
+
+
+================================================================================
+2. SYSTEM REQUIREMENTS & SETUP
+================================================================================
+
+Requirements:
+  - g++ compiler with C++17 support
+  - SFML 2.5 or higher
+  - GNU Make
+  - Linux (tested on Ubuntu/Debian-based systems)
+
+Installation (Ubuntu/Debian):
+  sudo apt install g++ libsfml-dev make
+
+
+================================================================================
+3. BUILD INSTRUCTIONS
+================================================================================
+
+Build the project:
+  make clean && make
+
+Run the game:
+  ./eduquest
+
+The Makefile compiles all .cpp files in src/ with the following flags:
+  - Compiler:    g++
+  - Standard:    C++17 (-std=c++17)
+  - Warnings:    -Wall
+  - Includes:    -Iinclude (for nlohmann/json.hpp)
+  - Libraries:   -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
+
+Output binary: ./eduquest
+
+
+================================================================================
+4. PROJECT STRUCTURE & FILE ORGANIZATION
+================================================================================
+
+spl-midterm/
+|
+|-- Makefile                    Build configuration
+|-- eduquest                    Compiled binary (after build)
+|
+|-- src/                        Source code
+|   |-- main.cpp                Entry point
+|   |-- Game.h / Game.cpp       Main game class, window, game loop
+|   |-- GameManager.h / .cpp    Gameplay orchestrator, tilemap, collisions
+|   |-- Player.h / Player.cpp   Player character logic
+|   |-- Enemy.h / Enemy.cpp     Enemy NPC logic
+|   |-- BattleSystem.h / .cpp   Question-based combat system
+|   |-- QuestionManager.h / .cpp  JSON question loader and selector
+|   |-- UIManager.h / .cpp      All UI rendering (HUD, menus, panels)
+|   |-- SoundManager.h / .cpp   Sound effects and music management
+|
+|-- include/
+|   |-- nlohmann/
+|       |-- json.hpp            Vendored single-header JSON parser
+|
+|-- data/
+|   |-- questions.json          45 educational questions (3 categories, 3 difficulties)
+|
+|-- assets/
+|   |-- fonts/
+|   |   |-- arial.ttf           Game font
+|   |-- images/
+|   |   |-- player.png          Player spritesheet (192x320, 32x32 frames)
+|   |   |-- skeleton.png        Skeleton enemy spritesheet
+|   |   |-- slime.png           Slime enemy spritesheet (512x192, 64x64 frames)
+|   |   |-- orc_warrior.png     Orc Warrior spritesheet (128x32, 32x32 frames)
+|   |   |-- orc_shaman.png      Orc Shaman spritesheet (128x32, 32x32 frames)
+|   |   |-- wizard_npc.png      Shop NPC spritesheet (128x32, 4 frames)
+|   |   |-- grass.png           Grass tile (16x16)
+|   |   |-- tree.png            Tree tile (64x80)
+|   |   |-- water.png           Water tile (16x16)
+|   |   |-- path_tile.png       Path tile (16x16)
+|   |   |-- fence.png           Fence tile (16x16)
+|   |   |-- house.png           House sprite (96x128)
+|   |   |-- chest.png           Chest sprite (16x16)
+|   |   |-- slash.png           Slash animation (512x64, 8 frames of 64x64)
+|   |   |-- ui/                 UI panel, button, bar, and icon textures
+|   |   |-- logo/               Main menu background image
+|   |-- sounds/
+|       |-- correct.ogg         Correct answer SFX
+|       |-- wrong.ogg           Wrong answer SFX
+|       |-- menu_select.ogg     Menu navigation SFX
+|       |-- level_up.ogg        Level up SFX
+|       |-- battle_start.ogg    Battle start SFX
+|       |-- enemy_death.ogg     Enemy defeated SFX
+|       |-- win.ogg             Win screen SFX
+|       |-- game_over.ogg       Game over SFX
+|       |-- bgm_menu.ogg        Menu background music
+
+
+================================================================================
+5. ARCHITECTURE OVERVIEW
+================================================================================
+
+The project follows a layered composition architecture:
+
+    main.cpp
+      |
+      v
+    Game                          (owns window, runs game loop)
+      |
+      v
+    GameManager                   (orchestrates all gameplay systems)
+      |
+      |-- Player                  (player character)
+      |-- vector<Enemy>           (enemy NPCs)
+      |-- vector<Chest>           (collectible chests)
+      |-- BattleSystem            (combat logic)
+      |     |-- QuestionManager&  (reference, shared)
+      |     |-- UIManager&        (reference, shared)
+      |     |-- SoundManager&     (reference, shared)
+      |-- QuestionManager         (question data)
+      |-- UIManager               (all rendering)
+      |-- SoundManager            (audio)
+
+Data flow:
+  - Game owns GameManager and delegates input/update/draw to it
+  - GameManager owns all sub-systems and coordinates between them
+  - BattleSystem receives references to QuestionManager, UIManager,
+    and SoundManager (does not own them)
+  - State transitions are managed via a GameState enum passed by reference
+
+
+================================================================================
+6. CLASS DOCUMENTATION
+================================================================================
+
+
+--------------------------------------------------------------------------------
+6.1  Game  (Game.h / Game.cpp)
+--------------------------------------------------------------------------------
+
+Purpose:    Main application class. Creates the window, runs the game loop,
+            and routes input/update/draw based on the current GameState.
+
+Constructor:
+  Game()
+    - Creates sf::RenderWindow at 1280x720, titled "EduQuest RPG"
+    - Sets framerate limit to 60 FPS
+    - Initializes GameManager
+    - Sets initial state to MAIN_MENU
+
+Public Methods:
+  void run()
+    - Main game loop: processEvents() -> update(dt) -> draw()
+    - Plays menu music on startup
+    - Runs until window is closed
+
+Private Methods:
+  void processEvents()
+    - Polls SFML events (window close, key presses)
+    - Routes input based on current GameState:
+      * MAIN_MENU: Left/Right to navigate, Enter to select (Start/Instructions/Quit)
+      * PAUSED: ESC to resume, Q to quit to menu
+      * PLAYING: ESC to pause, delegates other input to GameManager
+      * BATTLE/SHOPPING: Delegates to GameManager
+      * GAME_OVER/WIN: Enter returns to main menu
+
+  void update(float deltaTime)
+    - Only updates during PLAYING, BATTLE, or SHOPPING states
+    - Delegates to GameManager.update()
+
+  void draw()
+    - Clears window, draws based on GameState, displays
+
+Member Variables:
+  sf::RenderWindow window       The game window
+  sf::Clock clock               Delta time clock
+  GameState state                Current game state
+  GameManager gameManager        The gameplay orchestrator
+
+
+--------------------------------------------------------------------------------
+6.2  GameManager  (GameManager.h / GameManager.cpp)
+--------------------------------------------------------------------------------
+
+Purpose:    Central orchestrator. Manages the tilemap, player, enemies,
+            chests, shop NPC, wave system, and coordinates all sub-systems.
+
+Constructor:
+  GameManager()
+    - Initializes BattleSystem with references to QuestionManager, UIManager,
+      and SoundManager
+
+Public Methods:
+  bool init()
+    - Loads all assets: fonts, UI textures, sounds, questions, tile textures,
+      player texture, enemy textures, wizard NPC, chest, slash animation
+    - Initializes tilemap, enemies, and chests
+    - Sets player starting position at tile (2, 5)
+    - Returns false if questions fail to load
+
+  void handleInput(sf::Event& event, GameState& state)
+    - BATTLE state: forwards key press to BattleSystem
+    - PLAYING state: E key triggers interactions:
+      * Priority: enemy battle > chest > shop
+      * Opens chests (health or score), starts battles, opens shop
+    - SHOPPING state: W/S to navigate, Enter to buy, ESC to close
+      * Items: Health Potion (50 pts), Power Boost (100 pts), Full Heal (150 pts)
+
+  void update(float deltaTime, GameState& state)
+    - PLAYING: handles wave transitions, player movement with collision,
+      enemy updates, NPC animation, slash animation, chest popups
+    - BATTLE: updates BattleSystem; on battle end:
+      * Player dead -> GAME_OVER
+      * Enemy dead + all dead + wave 3 -> WIN
+      * Enemy dead + all dead + wave < 3 -> wave transition
+      * Enemy dead + others alive -> return to PLAYING
+
+  void draw(sf::RenderWindow& window, GameState state)
+    - Draws in order: tilemap, chests, shop NPC, enemies (with HP bars),
+      player, slash animation, interact prompts, chest popups, HUD
+    - Additionally draws battle overlay or shop panel if in those states
+
+  Player& getPlayer()             Returns reference to player
+  UIManager& getUIManager()       Returns reference to UIManager
+  SoundManager& getSoundManager() Returns reference to SoundManager
+  void reset()                    Resets all game state for new game
+
+Private Methods:
+  void initTilemap()       Builds 30x20 tile grid with terrain placement
+  void initEnemies()       Spawns enemies based on current wave
+  void initChests()        Places chests based on current wave
+  void drawTilemap()       Renders all tiles with wave color tinting
+  void drawWaveTransition() Renders wave complete overlay
+  void drawChests()        Renders unopened chests
+  void drawChestPopup()    Renders floating text when chest is opened
+  bool isWalkable(x, y)   Collision detection (checks 4 corners against tile types)
+  int getNearbyEnemyIndex()  Returns index of closest alive enemy within range
+  int getNearbyChestIndex()  Returns index of closest unopened chest within range
+  void drawInteractPrompt()  Shows "Press E" near interactable objects
+  void drawSlashAnimation()  Renders slash effect on enemy death
+  void drawShopNPC()       Renders wizard NPC with animation
+  bool isNearShopNPC()     Distance check to shop NPC (80px radius)
+
+Tilemap Legend:
+  0 = Grass (walkable)
+  1 = Tree (wall, not walkable)
+  2 = Water (not walkable)
+  3 = Path (walkable, visual variant)
+  4 = Fence (not walkable)
+  5 = House (not walkable, rendered as single sprite at top-left tile)
+
+Wave System:
+  - 3 waves total
+  - Wave 1: 3 Slimes
+  - Wave 2: 2 Slimes + 1 Skeleton + 1 Orc Warrior
+  - Wave 3: 2 Skeletons (buffed to 100 HP) + 1 Orc Warrior + 1 Orc Shaman
+  - Wave transition: 3-second overlay between waves
+  - Background tint changes per wave (white -> warm -> purple)
+
+
+--------------------------------------------------------------------------------
+6.3  Player  (Player.h / Player.cpp)
+--------------------------------------------------------------------------------
+
+Purpose:    Represents the player character with movement, animation,
+            stats, and leveling.
+
+Constructor:
+  Player()
+    - Initializes velocity to (0, 0)
+    - Creates blue fallback rectangle (48x48) at position (96, 96)
+    - Sets sprite scale to 1.5x (32px -> 48px)
+
+Public Methods:
+  bool loadTexture(const string& filepath)
+    - Loads spritesheet from file
+    - Sets up initial texture rect and scale
+
+  void handleInput()
+    - Reads WASD keys for movement
+    - Sets velocity vector and animation row:
+      * W: up (row 4), S: down (row 0), A: left (row 2 flipped), D: right (row 2)
+
+  void update(float deltaTime)
+    - Moves sprite/fallback shape by velocity * deltaTime
+    - Advances animation frame every 0.12 seconds while moving
+    - Handles sprite flipping for left-facing movement
+
+  void draw(sf::RenderWindow& window)
+    - Draws sprite if texture loaded, otherwise draws fallback rectangle
+
+  void takeDamage(int amount)    Reduces HP (clamped to 0)
+  void gainXP(int amount)        Adds XP, triggers checkLevelUp()
+  void checkLevelUp()            Levels up every (level * 50) XP:
+                                   - XP resets, level increments
+                                   - maxHp += 10, HP fully restored
+
+  sf::FloatRect getBounds() const   Returns 48x48 bounding box
+  sf::Vector2f getPosition() const  Returns top-left position
+  void setPosition(float x, float y)  Sets position
+
+Public Stats:
+  int hp = 100            Current health points
+  int maxHp = 100         Maximum health points
+  int score = 0           Accumulated score
+  int xp = 0              Current experience points
+  int level = 1           Current level
+  bool powerBoost = false  2x damage flag (from shop)
+
+Animation:
+  - Spritesheet: 192x320 pixels, 32x32 frames, 6 columns x 10 rows
+  - Row 0: walk down, Row 2: walk right, Row 4: walk up
+  - Left movement: Row 2 with horizontal flip
+  - 6 frames per direction, 0.12s per frame
+  - Movement speed: 150 pixels/second
+
+
+--------------------------------------------------------------------------------
+6.4  Enemy  (Enemy.h / Enemy.cpp)
+--------------------------------------------------------------------------------
+
+Purpose:    Represents enemy NPCs that patrol between two waypoints and
+            can be engaged in battle.
+
+Constructor:
+  Enemy(sf::Vector2f waypointA, sf::Vector2f waypointB, EnemyType type)
+    - Sets stats based on type:
+      * SLIME:       50 HP, 40 px/s speed
+      * SKELETON:    75 HP, 60 px/s speed
+      * ORC_WARRIOR: 90 HP, 50 px/s speed
+      * ORC_SHAMAN:  60 HP, 70 px/s speed
+    - Sets fallback color based on type
+    - Positions at waypointA
+
+Public Methods:
+  void loadTexture(sf::Texture& sharedTexture)
+    - Assigns shared texture (multiple enemies share one texture per type)
+    - Configures frame size and count based on type:
+      * Slime: 64x64 frames, 4 frames
+      * Skeleton: 32x32 frames, 6 frames
+      * Orc types: 32x32 frames, 4 frames
+
+  void update(float deltaTime)
+    - Moves toward current waypoint target
+    - Reverses direction when within 2px of target
+    - Normalizes direction vector for smooth movement
+    - Animates sprite based on movement direction
+    - Handles horizontal flipping
+
+  void draw(sf::RenderWindow& window)   Draws sprite or fallback
+  void takeDamage(int amount)             Reduces HP (clamped to 0)
+  bool isDead() const                     Returns true if HP <= 0
+  bool isPlayerNearby(sf::Vector2f) const Distance check (90px radius)
+  sf::FloatRect getBounds() const         Returns 48x48 bounding box
+  sf::Vector2f getPosition() const        Returns top-left position
+
+Public Members:
+  int hp, maxHp            Health points
+  EnemyType type           Enemy classification
+
+Patrol Behavior:
+  - Moves back and forth between waypointA and waypointB
+  - Reverses direction when reaching a waypoint (within 2px)
+  - Interaction radius: 90 pixels
+
+
+--------------------------------------------------------------------------------
+6.5  BattleSystem  (BattleSystem.h / BattleSystem.cpp)
+--------------------------------------------------------------------------------
+
+Purpose:    Manages question-based combat between the player and an enemy.
+
+Constructor:
+  BattleSystem(QuestionManager& qm, UIManager& ui, SoundManager& sm)
+    - Stores references to shared managers
+
+Public Methods:
+  void startBattle(Player& player, Enemy& enemy)
+    - Stores pointers to combatants
+    - Resets battle state, combo streak, turn count
+    - Loads first question
+
+  void handleInput(sf::Keyboard::Key key)
+    - Only processes during ASKING state
+    - Accepts A, B, C, D keys
+    - Correct answer:
+      * Increments combo streak
+      * Calculates damage: base (15/25/40 by difficulty) * combo multiplier + speed bonus
+      * If powerBoost active: base damage doubled
+      * Speed bonus: up to +10 based on how fast the answer was given
+      * Deals damage to enemy, adds to player score
+      * Plays correct sound
+    - Wrong answer:
+      * Resets combo streak
+      * Player takes 10 damage
+      * Plays wrong sound
+    - Transitions to SHOWING_FEEDBACK state
+
+  void update(float deltaTime)
+    - ASKING state: increments question timer
+      * If timer >= 12 seconds: auto-fail (same as wrong answer)
+    - SHOWING_FEEDBACK state: waits 1.5 seconds, then:
+      * Enemy dead -> battle over, player gains 20 XP, checks level up
+      * Player dead -> battle over
+      * Otherwise -> loads next question
+
+  void draw(sf::RenderWindow& window)
+    - Draws battle overlay
+    - ASKING: draws question panel with timer, combo, options
+    - SHOWING_FEEDBACK: draws correct/wrong/timeout feedback
+
+  bool isBattleOver() const     Returns true when battle has ended
+  bool isPlayerDead() const     Returns true if player HP reached 0
+  bool isEnemyDead() const      Returns true if enemy HP reached 0
+
+Private Methods:
+  void loadNextQuestion()
+    - Gets difficulty based on player level (1-2: Easy, 3-4: Medium, 5+: Hard)
+    - Picks random category from: Programming, Science, Computer Science
+    - Fetches question from QuestionManager
+
+  string getDifficulty(int level)        Maps level to difficulty string
+  string getRandomCategory()              Random pick from 3 categories
+  int getDamageForDifficulty(string)     Easy=15, Medium=25, Hard=40
+  float getComboMultiplier()              1=x1, 2=x1.5, 3=x2, 4+=x2.5
+
+Combo System:
+  - Streak increments on each correct answer
+  - Resets to 0 on wrong answer or timeout
+  - Multiplier: x1 (1 streak), x1.5 (2), x2.0 (3), x2.5 (4+)
+
+Timer System:
+  - 12 seconds to answer each question
+  - Timer bar displayed in UI (green -> yellow -> red)
+  - Timeout = automatic wrong answer
+
+
+--------------------------------------------------------------------------------
+6.6  QuestionManager  (QuestionManager.h / QuestionManager.cpp)
+--------------------------------------------------------------------------------
+
+Purpose:    Loads questions from a JSON file and serves them randomly
+            without repeating until all are exhausted.
+
+Constructor:
+  QuestionManager()     Default constructor
+
+Public Methods:
+  bool loadQuestions(const string& filepath)
+    - Opens and parses JSON file using nlohmann/json
+    - Populates vector<Question> from "questions" array
+    - Each entry: questionText, optionA-D, correctAnswer, category, difficulty
+    - Returns false on file open failure
+
+  Question getRandomQuestion(const string& category, const string& difficulty)
+    - Filtering priority:
+      1. Matching category AND difficulty (unused only)
+      2. Matching category only (unused)
+      3. Any unused question
+      4. If all exhausted: resets used set, tries all questions
+    - Tracks used questions via set<int> usedIndices
+    - Returns randomly selected Question from candidates
+
+  void resetUsed()      Clears usedIndices (called on game reset)
+
+Question Tracking:
+  - Uses set<int> to track indices of already-asked questions
+  - Prevents repeats until all 45 questions have been used
+  - Automatically resets when pool is exhausted
+
+
+--------------------------------------------------------------------------------
+6.7  UIManager  (UIManager.h / UIManager.cpp)
+--------------------------------------------------------------------------------
+
+Purpose:    Handles all user interface rendering including HUD, menus,
+            battle panels, and feedback screens. Supports both textured
+            UI (when assets load) and fallback colored rectangles.
+
+Constructor:
+  UIManager()     Default constructor
+
+Public Methods:
+  bool loadFont(const string& filepath)
+    - Loads font from file for all text rendering
+
+  bool loadUIAssets()
+    - Loads all UI textures: panels, buttons, bars, icons, logo
+    - Sets uiAssetsLoaded flag
+
+  void drawHUD(window, hp, maxHp, xp, level, score, wave, maxWaves)
+    - Draws HP bar (red background, green fill)
+    - Draws XP bar (gray background, yellow fill)
+    - Draws text: HP, XP, Level, Wave, Score
+
+  void drawMainMenu(window)
+    - Draws logo background (or dark fallback)
+    - Draws 3 horizontal buttons: START, INSTRUCTIONS, QUIT
+    - Highlights selected button with arrow indicators
+    - Draws navigation hint text
+
+  void drawInstructions(window)
+    - Draws panel with 13 lines of gameplay instructions
+
+  void drawGameOver(window, score)
+    - Red background, "GAME OVER" title, final score, return hint
+
+  void drawWin(window, score, level)
+    - Dark blue background, "YOU WIN!" title, final stats, return hint
+
+  void drawBattleOverlay(window)
+    - Semi-transparent black overlay (alpha 150)
+
+  void drawQuestionPanel(window, question, comboStreak, comboMultiplier, timerRatio, turnCount)
+    - Timer bar at top (green -> yellow -> red based on time remaining)
+    - Turn counter and combo display
+    - Category and difficulty label
+    - Question text
+    - 4 answer buttons (A, B, C, D)
+    - Input hint text
+
+  void drawFeedback(window, correct, correctAnswer, damageDealt, comboStreak, timedOut)
+    - Check/cross icon
+    - "CORRECT!", "WRONG! Answer: X", or "TIME'S UP!"
+    - Damage dealt or penalty text
+    - Combo info if streak >= 2
+
+  void drawEnemyHPBar(window, x, y, hp, maxHp)
+    - Small bar above enemy sprites (40x5 pixels)
+    - Color: green (>60%), yellow (>30%), red (<=30%)
+
+  void drawPauseMenu(window)
+    - Overlay with "PAUSED", resume and quit hints
+
+  void drawShopPanel(window, playerScore, selection)
+    - "Wizard's Shop" title with score display
+    - 3 items with name, cost, and description
+    - Highlights selected item, grays out unaffordable items
+
+  sf::Font* getFont()     Returns pointer to font (nullptr if not loaded)
+
+Private Helper Methods:
+  void drawPanel(window, texture, x, y, w, h)
+    - Draws a scaled panel sprite
+
+  void drawBar(window, leftTex, midTex, rightTex, x, y, totalWidth, fillRatio, height)
+    - Draws a 3-piece bar (left cap, middle fill, right cap)
+    - Clips middle piece based on fill ratio
+
+Dual Rendering:
+  All draw methods check uiAssetsLoaded/fontLoaded and provide fallback
+  rendering using basic SFML shapes and colors when assets are missing.
+
+
+--------------------------------------------------------------------------------
+6.8  SoundManager  (SoundManager.h / SoundManager.cpp)
+--------------------------------------------------------------------------------
+
+Purpose:    Manages all sound effects and background music.
+
+Constructor:
+  SoundManager()    Default constructor
+
+Public Methods:
+  bool init()
+    - Loads 8 sound effects from assets/sounds/:
+      correct, wrong, menu_select, level_up, battle_start,
+      enemy_death, win, game_over
+    - Loads menu background music (loops, volume 40%)
+    - Returns false if any sound fails (continues with warnings)
+
+  void playCorrect()        Plays correct answer sound
+  void playWrong()          Plays wrong answer sound
+  void playMenuSelect()     Plays menu navigation sound
+  void playLevelUp()        Plays level up sound
+  void playBattleStart()    Plays battle start sound
+  void playEnemyDeath()     Plays enemy defeated sound
+  void playWin()            Plays win screen sound
+  void playGameOver()       Plays game over sound
+  void playMenuMusic()      Starts looping menu BGM (stops game music)
+  void playGameMusic()      Stops menu music (game BGM placeholder)
+  void stopMusic()          Stops all music
+
+Private:
+  bool loadSound(const string& name, const string& filepath)
+    - Loads a sound buffer and creates a sound object
+    - Stores in map<string, SoundBuffer> and map<string, Sound>
+
+Audio Storage:
+  - map<string, sf::SoundBuffer> buffers   Stores audio data by name
+  - map<string, sf::Sound> sounds          Stores playable sound objects
+  - sf::Music menuMusic, gameMusic         Streaming music objects
+
+
+================================================================================
+7. DATA STRUCTURES (STRUCTS & ENUMS)
+================================================================================
+
+STRUCTS:
+
+  struct Question
+    string questionText        The question text
+    string optionA - optionD   Four answer choices
+    char correctAnswer         Correct answer letter (A/B/C/D)
+    string category            "Programming", "Science", or "Computer Science"
+    string difficulty          "Easy", "Medium", or "Hard"
+
+  struct Chest
+    sf::Vector2f position      World position
+    bool opened = false        Whether collected
+    enum Type {HEALTH, SCORE}  What the chest gives
+    int value                  Amount of HP or score
+
+  struct ShopNPC
+    sf::Vector2f position      World position
+    sf::Sprite sprite          Rendered sprite
+    int animFrame = 0          Current animation frame
+    float animTimer = 0        Animation timer
+    float animSpeed = 0.2      Seconds per frame
+    int numFrames = 4          Total frames
+    int frameSize = 32         Pixel size per frame
+
+ENUMS (all using enum class for type safety):
+
+  enum class GameState
+    MAIN_MENU      Initial screen with Start/Instructions/Quit
+    PLAYING        Active gameplay, player can move and interact
+    BATTLE         Question-based combat active
+    SHOPPING       Shop panel is open
+    PAUSED         Game is paused
+    GAME_OVER      Player HP reached 0
+    WIN            All 3 waves cleared
+
+  enum class BattleState
+    ASKING              Waiting for player answer
+    SHOWING_FEEDBACK    Displaying correct/wrong result
+
+  enum class EnemyType
+    SLIME          Weakest enemy (50 HP, slow)
+    SKELETON       Medium enemy (75 HP, moderate speed)
+    ORC_WARRIOR    Tough enemy (90 HP, slow)
+    ORC_SHAMAN     Fast enemy (60 HP, fastest)
+
+
+================================================================================
+8. GAME FLOW & STATE MACHINE
+================================================================================
+
+State Transitions:
+
+  MAIN_MENU
+    |-- Enter (Start)       --> PLAYING (resets game, plays game music)
+    |-- Enter (Instructions) --> Shows instruction overlay
+    |-- Enter (Quit)        --> Closes window
+
+  PLAYING
+    |-- Press E near enemy  --> BATTLE (starts battle)
+    |-- Press E near shop   --> SHOPPING (opens shop)
+    |-- Press ESC           --> PAUSED
+    |-- All wave enemies dead, wave < 3 --> Wave transition (stays PLAYING)
+    |-- All wave enemies dead, wave 3 --> WIN
+
+  BATTLE
+    |-- Enemy HP = 0        --> PLAYING (or WIN if all enemies dead in wave 3)
+    |-- Player HP = 0       --> GAME_OVER
+
+  SHOPPING
+    |-- Press ESC           --> PLAYING
+
+  PAUSED
+    |-- Press ESC or Enter  --> PLAYING (resumes game music)
+    |-- Press Q             --> MAIN_MENU (plays menu music)
+
+  GAME_OVER
+    |-- Press Enter         --> MAIN_MENU
+
+  WIN
+    |-- Press Enter         --> MAIN_MENU
+
+
+================================================================================
+9. GAMEPLAY MECHANICS
+================================================================================
+
+MOVEMENT:
+  - WASD keys for 4-directional movement
+  - Speed: 150 pixels/second
+  - Collision detection checks all 4 corners of 48x48 player bounds
+  - Blocked tiles: trees (1), water (2), fences (4), houses (5)
+
+ENEMY PATROL:
+  - Each enemy patrols between two fixed waypoints
+  - Movement speed varies by type (40-70 px/s)
+  - Reverses at each waypoint
+  - Detection/interaction radius: 90 pixels
+
+INTERACTION:
+  - Press E to interact with nearest object
+  - Priority: Enemy > Chest > Shop NPC
+  - Detection radius: 80-90 pixels
+
+BATTLE SYSTEM:
+  - Turn-based question answering
+  - Question selected by player level -> difficulty, random category
+  - 12-second timer per question
+  - Correct: deal damage (base * combo multiplier + speed bonus)
+  - Wrong/Timeout: player takes 10 damage, combo resets
+  - Battle ends when either combatant reaches 0 HP
+  - Victory: +20 XP to player
+
+DAMAGE CALCULATION:
+  Base damage by difficulty:
+    Easy = 15,  Medium = 25,  Hard = 40
+
+  If power boost active:
+    base damage * 2
+
+  Combo multiplier:
+    1 streak = x1.0
+    2 streak = x1.5
+    3 streak = x2.0
+    4+ streak = x2.5
+
+  Speed bonus:
+    (1 - timeUsed/timeLimit) * 10  (max +10 for instant answer)
+
+  Total = (base * combo multiplier) + speed bonus
+
+LEVELING:
+  - XP threshold: level * 50 (Level 1 = 50 XP, Level 2 = 100 XP, etc.)
+  - On level up: maxHp += 10, HP fully restored, XP remainder carries over
+  - Higher level = harder questions (1-2: Easy, 3-4: Medium, 5+: Hard)
+
+WAVE SYSTEM:
+  - 3 waves of enemies
+  - Clearing all enemies in a wave triggers 3-second transition
+  - New enemies and chests spawn each wave
+  - Background color tint changes per wave
+  - Clearing wave 3 = WIN
+
+CHESTS:
+  - Placed around the map, different per wave
+  - Two types: HEALTH (restores HP) or SCORE (adds points)
+  - Floating popup text on collection
+  - Cannot be reopened
+
+SHOP:
+  - Wizard NPC located at tile (4, 3)
+  - 3 items purchasable with score:
+    * Health Potion: 50 pts, restores 30 HP
+    * Power Boost: 100 pts, 2x damage next battle
+    * Full Heal: 150 pts, restores HP to max
+  - Wrong sound plays if cannot afford
+
+
+================================================================================
+10. DATA FILES
+================================================================================
+
+questions.json (data/questions.json):
+  - Contains 45 educational questions
+  - 3 categories: Programming, Science, Computer Science
+  - 3 difficulty levels: Easy, Medium, Hard
+
+  Distribution:
+    Programming:        ~15 questions (6 Easy, 4 Medium, 5 Hard)
+    Science:            ~12 questions (5 Easy, 4 Medium, 3 Hard)
+    Computer Science:   ~18 questions (5 Easy, 7 Medium, 5 Hard)
+
+  JSON format:
+    {
+      "questions": [
+        {
+          "question": "Question text here",
+          "optionA": "Option A text",
+          "optionB": "Option B text",
+          "optionC": "Option C text",
+          "optionD": "Option D text",
+          "answer": "C",
+          "category": "Programming",
+          "difficulty": "Easy"
+        }
+      ]
+    }
+
+
+================================================================================
+11. ASSETS
+================================================================================
+
+Sprite Assets:
+  - Player:      192x320 spritesheet, 32x32 frames, 6 columns x 10 rows
+  - Skeleton:    Spritesheet, 32x32 frames, 6 frames per row
+  - Slime:       512x192 spritesheet, 64x64 frames, 4 frames idle
+  - Orc Warrior: 128x32 strip, 32x32 frames, 4 frames
+  - Orc Shaman:  128x32 strip, 32x32 frames, 4 frames
+  - Wizard NPC:  128x32 strip, 32x32 frames, 4 frames
+  - Slash:       512x64 strip, 64x64 frames, 8 frames
+
+Tile Assets (all scaled from 16x16 to 48x48):
+  - grass.png, water.png, path_tile.png, fence.png
+  - tree.png (64x80, scaled to 48x48)
+  - house.png (96x128, spans 2x3 tiles)
+
+UI Assets (assets/images/ui/):
+  - panel_blue.png, panelInset_brown.png
+  - buttonLong_blue.png, buttonLong_blue_pressed.png
+  - buttonLong_beige.png, buttonLong_beige_pressed.png
+  - barBack, barGreen, barYellow, barRed (left/mid/right pieces)
+  - iconCheck_blue.png, iconCross_brown.png
+
+Audio Assets (assets/sounds/):
+  - 8 sound effects (.ogg format)
+  - 1 background music track (.ogg format, looping)
+
+Font:
+  - assets/fonts/arial.ttf
+
+
+================================================================================
+12. OOP CONCEPTS APPLIED
+================================================================================
+
+1. CLASSES AND OBJECTS
+   - 8 classes modeling distinct game components
+   - Objects instantiated: Game in main(), all sub-systems in GameManager
+
+2. ENCAPSULATION
+   - Private data with public method interfaces in every class
+   - Example: Player hides texture/velocity/animation, exposes handleInput()/update()
+
+3. CONSTRUCTORS
+   - Default: Player(), UIManager(), SoundManager(), QuestionManager()
+   - Parameterized: Enemy(waypointA, waypointB, type)
+   - Member initializer lists: Game(), BattleSystem()
+
+4. COMPOSITION (Has-A)
+   - Game has-a GameManager
+   - GameManager has-a Player, vector<Enemy>, BattleSystem, UIManager, etc.
+   - Strong ownership: destroying GameManager destroys all sub-systems
+
+5. STRUCTS
+   - Question, Chest, ShopNPC for grouping related data
+
+6. ENUMERATIONS (enum class)
+   - GameState, BattleState, EnemyType, Chest::Type
+
+7. ACCESS MODIFIERS
+   - public: interface methods
+   - private: internal state, helper functions
+
+8. MEMBER FUNCTIONS
+   - Behavior organized per class (update, draw, handleInput, etc.)
+
+9. CONST CORRECTNESS
+   - Getter methods marked const: isDead(), getBounds(), getPosition(), etc.
+
+10. STATIC MEMBERS
+    - Class constants: FRAME_SIZE, MAP_WIDTH, MAP_HEIGHT, TILE_SIZE, maxWaves
+
+11. REFERENCES AND POINTERS
+    - References for non-owning shared access: BattleSystem stores QuestionManager&
+    - Pointers for nullable targets: Player*, Enemy* in BattleSystem
+
+12. STL CONTAINERS
+    - vector<Enemy>, vector<Chest>, vector<Question>
+    - set<int> for tracking used questions
+    - map<string, SoundBuffer>, map<string, Sound>
+
+
+================================================================================
+                              END OF DOCUMENTATION
+================================================================================
