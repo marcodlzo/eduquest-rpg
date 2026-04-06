@@ -1,0 +1,149 @@
+OOP CONCEPTS IN EDUQUEST RPG
+=============================
+
+1. CLASSES AND OBJECTS
+----------------------
+The project defines 8 classes, each modeling a distinct game component:
+  - Game         — Main application class; owns the window and game loop
+  - GameManager  — Orchestrates gameplay, tilemap, and all sub-systems
+  - Player       — Represents the player character with stats and movement
+  - Enemy        — Represents enemy NPCs with patrol behavior
+  - BattleSystem — Manages question-based combat logic
+  - QuestionManager — Loads and serves quiz questions from JSON
+  - UIManager    — Handles all UI rendering (HUD, menus, battle panels)
+  - SoundManager — Manages sound effects and background music
+
+Objects are instantiated from these classes:
+  - main.cpp: "Game game;" creates the game object
+  - GameManager owns: Player player, vector<Enemy> enemies, BattleSystem, QuestionManager, UIManager, SoundManager
+
+
+2. ENCAPSULATION
+----------------
+Each class hides internal data using private members and exposes controlled access via public methods.
+
+Examples:
+  - Player: private members (texture, sprite, velocity, speed, animation state) are hidden.
+    Public interface: handleInput(), update(), draw(), takeDamage(), gainXP(), getPosition(), getBounds()
+
+  - Enemy: private members (waypointA, waypointB, movingToB, speed, animation data).
+    Public interface: update(), draw(), takeDamage(), isDead(), isPlayerNearby()
+
+  - SoundManager: private map<string, SoundBuffer> buffers and map<string, Sound> sounds.
+    Public interface: playCorrect(), playWrong(), playMenuSelect(), etc.
+    Private helper: loadSound() — internal utility not exposed to other classes
+
+  - QuestionManager: private vector<Question> and set<int> usedIndices.
+    Public: getRandomQuestion(), loadQuestions(), resetUsed()
+
+
+3. CONSTRUCTORS (Object Initialization)
+----------------------------------------
+Constructors initialize objects to a valid state.
+
+  - Player::Player() — initializes velocity, fallback shape, sprite scale
+  - Enemy::Enemy(waypointA, waypointB, type) — parameterized constructor; sets HP, speed, and color based on EnemyType
+  - Game::Game() — uses member initializer list: window(VideoMode(1280,720), "EduQuest RPG"), state(MAIN_MENU)
+  - BattleSystem::BattleSystem(QuestionManager& qm, UIManager& ui, SoundManager& sm) — initializes reference members via initializer list
+
+
+4. COMPOSITION (Has-A Relationship)
+------------------------------------
+Objects contain other objects as members, forming a layered architecture.
+
+  Game HAS-A:
+    - sf::RenderWindow window
+    - GameManager gameManager
+
+  GameManager HAS-A:
+    - Player player
+    - vector<Enemy> enemies
+    - vector<Chest> chests
+    - QuestionManager questionManager
+    - UIManager uiManager
+    - SoundManager soundManager
+    - BattleSystem battleSystem
+
+  BattleSystem HAS-A (by reference):
+    - QuestionManager& questionManager
+    - UIManager& uiManager
+    - SoundManager& soundManager
+
+This demonstrates strong composition — destroying GameManager destroys all its owned components.
+
+
+5. STRUCTS (Plain Data Types)
+-----------------------------
+Structs group related data without complex behavior:
+  - Question — holds questionText, options A-D, correctAnswer, category, difficulty
+  - Chest — holds position, opened flag, type (HEALTH/SCORE), value
+  - ShopNPC — holds position, sprite, animation data
+
+
+6. ENUMERATIONS (enum class)
+-----------------------------
+Strongly-typed enums define fixed sets of states:
+  - GameState: MAIN_MENU, PLAYING, BATTLE, SHOPPING, PAUSED, GAME_OVER, WIN
+  - BattleState: ASKING, SHOWING_FEEDBACK
+  - EnemyType: SLIME, SKELETON, ORC_WARRIOR, ORC_SHAMAN
+  - Chest::Type: HEALTH, SCORE (nested enum inside struct)
+
+
+7. ACCESS MODIFIERS (public / private)
+---------------------------------------
+All classes use access modifiers to enforce encapsulation:
+  - public: methods that other classes need to call (draw, update, getters)
+  - private: internal state, helper methods, implementation details
+
+Example in GameManager:
+  - public: init(), handleInput(), update(), draw(), getPlayer(), reset()
+  - private: initTilemap(), initEnemies(), isWalkable(), getNearbyEnemyIndex(), all texture/sprite members
+
+
+8. MEMBER FUNCTIONS
+-------------------
+Classes organize behavior into methods that operate on the object's own data:
+  - Player::handleInput() — reads keyboard, updates velocity
+  - Player::checkLevelUp() — checks XP threshold, increments level and maxHP
+  - Enemy::isPlayerNearby() — calculates distance using own position
+  - BattleSystem::getComboMultiplier() — returns multiplier based on comboStreak
+  - QuestionManager::getRandomQuestion() — filters, selects, and tracks used questions
+
+
+9. CONST CORRECTNESS
+--------------------
+Methods that do not modify object state are marked const:
+  - Enemy::isDead() const
+  - Enemy::isPlayerNearby() const
+  - Enemy::getBounds() const
+  - Player::getBounds() const
+  - Player::getPosition() const
+  - BattleSystem::isBattleOver() const
+  - BattleSystem::getDamageForDifficulty() const
+  - BattleSystem::getComboMultiplier() const
+
+
+10. STATIC MEMBERS
+------------------
+Class-level constants shared across all instances:
+  - Player: static const int FRAME_SIZE = 32
+  - GameManager: static const int MAP_WIDTH = 30, MAP_HEIGHT = 20, TILE_SIZE = 48
+  - GameManager: static const int maxWaves = 3
+
+
+11. REFERENCES AND POINTERS
+----------------------------
+Used for inter-object communication without ownership:
+  - BattleSystem stores QuestionManager&, UIManager&, SoundManager& (references — non-owning, always valid)
+  - BattleSystem stores Player* currentPlayer, Enemy* currentEnemy (pointers — nullable, set during startBattle())
+  - GameManager::getPlayer() returns Player& (reference to internal member)
+
+
+12. STL CONTAINERS
+------------------
+Standard Template Library containers manage collections:
+  - vector<Enemy> — dynamic array of enemies in GameManager
+  - vector<Chest> — dynamic array of chests
+  - vector<Question> — all loaded questions in QuestionManager
+  - set<int> — tracks used question indices to avoid repeats
+  - map<string, SoundBuffer> and map<string, Sound> — named sound storage in SoundManager
