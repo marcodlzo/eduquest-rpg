@@ -3,3 +3,4 @@ eduquest
 .superpowers/
 EduQuestRPG/
 *.md
+!README.md
