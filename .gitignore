@@ -1,3 +1,5 @@
 *.o
 eduquest
 .superpowers/
+EduQuestRPG/
+*.md
